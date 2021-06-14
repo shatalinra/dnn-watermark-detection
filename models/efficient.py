@@ -1,9 +1,19 @@
 import tensorflow as tf
 import logging
-
+from pathlib import Path
 
 backbone = tf.keras.applications.EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
 backbone.trainable = False
+
+class StopIfFileExists(tf.keras.callbacks.Callback):
+    """Callback that terminates training when certain file existss."""
+    def __init__(self, filepath):
+        self._filepath = Path(filepath)
+
+    def on_batch_end(self, batch, logs=None):
+        if self._filepath.is_file():
+            self.model.stop_training = True
+
 
 def preprocess(image):
     image = tf.image.resize(image, (224, 224))
@@ -20,5 +30,6 @@ def train_model(dataset):
 
     model.compile(loss=tf.losses.BinaryCrossentropy(), optimizer=tf.optimizers.Adam(learning_rate = 0.001))
 
-    history = model.fit(dataset, epochs=200, verbose=2)
+    stop = StopIfFileExists('stop.txt')
+    history = model.fit(dataset, epochs=200, verbose=2, callbacks=[stop])
     return model, history.history["loss"]
