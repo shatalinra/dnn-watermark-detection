@@ -101,7 +101,7 @@ def try_model(name, training_images, testing_images, step, batch_size, preproces
         detector.train(dataset, batch_size, "trained_models/" + name)
 
 
-training_images = (data.ImageSequence("../coco/2017/train/", 9, 5219), data.ImageSequence("watermarks/", 1, 4, digits = 4, extension="png"))
+training_images = (data.ImageSequence("../coco/2017/train/", 1, 5000), data.ImageSequence("watermarks/", 1, 4, digits = 4, extension="png"))
 testing_images = (data.ImageSequence("../coco/2017/train/", 5219, 5314), data.ImageSequence("watermarks/", 1, 4, digits = 4, extension="png"))
 
-try_model("efficent", training_images, testing_images, 100, 64, efficient.preprocess, (7, 7, 1280), efficient.train_model, script_args.validate)
+try_model("efficent", training_images, testing_images, 200, 64, efficient.preprocess, (7, 7, 1280), efficient.train_model, script_args.validate)

@@ -18,7 +18,7 @@ def train_model(dataset):
     model.add(tf.keras.layers.Activation("sigmoid", name = "activation"))
     model.summary(print_fn=lambda x: logging.info(x))
 
-    model.compile(loss=tf.losses.BinaryCrossentropy(), optimizer=tf.optimizers.Adam(learning_rate = 0.002))
+    model.compile(loss=tf.losses.BinaryCrossentropy(), optimizer=tf.optimizers.Adam(learning_rate = 0.001))
 
-    history = model.fit(dataset, epochs=10, verbose=2)
+    history = model.fit(dataset, epochs=200, verbose=2)
     return model, history.history["loss"]
