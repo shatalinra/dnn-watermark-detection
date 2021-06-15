@@ -21,7 +21,7 @@ class WatermarkDetector(object):
 
         # for now preprocessing and tf.data.Dataset is needed only for model based on effecient net
         # and for  other models fitting all training data to GPU greatly helps
-        dataset = source_dataset.dataset().cache("dataset.cache").batch(batch_size)
+        dataset = source_dataset.dataset().cache("dataset.cache")
 
         init_attempts = 1
         best_model = None
@@ -51,7 +51,7 @@ class WatermarkDetector(object):
         self._model = best_model
 
         # in the end, check accuracy
-        metrics = self._model.evaluate(dataset, verbose = 0, return_dict=True)
+        metrics = self._model.evaluate(dataset.batch(128), verbose = 0, return_dict=True)
         logging.info("Training accuracy is %0.1f%%", 100 * metrics["binary_accuracy"])
 
     def evaluate(self, source_dataset):

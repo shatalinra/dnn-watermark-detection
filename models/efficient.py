@@ -23,13 +23,13 @@ def preprocess(image):
 
 def train_model(dataset):
     model = tf.keras.Sequential(name = "efficient")
-    model.add(tf.keras.layers.GlobalAveragePooling2D(input_shape=(7,7,1280), name="pool")) # our data should be efficient embedding
-    model.add(tf.keras.layers.Dense(1, name="dense"))
+    model.add(tf.keras.layers.Dense(1, input_shape=(7,7,1280), name="dense")) # our data should be efficient embedding
     model.add(tf.keras.layers.Activation("sigmoid", name = "activation"))
+    model.add(tf.keras.layers.GlobalMaxPool2D(name="pool")) # pick the location with most propability for watermark
     model.summary(print_fn=lambda x: logging.info(x))
 
-    model.compile(loss=tf.losses.BinaryCrossentropy(), optimizer=tf.optimizers.Adam(learning_rate = 0.001))
+    model.compile(loss=tf.losses.BinaryCrossentropy(), optimizer=tf.optimizers.Adam(learning_rate = 0.002))
 
     stop = StopIfFileExists('stop.txt')
-    history = model.fit(dataset, epochs=200, verbose=2, callbacks=[stop])
+    history = model.fit(dataset.batch(32), epochs=200, verbose=2, callbacks=[stop])
     return model, history.history["loss"]
