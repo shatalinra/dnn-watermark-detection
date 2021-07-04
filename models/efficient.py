@@ -23,18 +23,28 @@ def preprocess(image):
 
 def train_model(dataset):
     model = tf.keras.Sequential(name = "efficient")
-    # 128 actually overfitted with training loss around 91% while testing was around 80%
-    model.add(tf.keras.layers.Dense(128, input_shape=(7,7,1280), name="dense1")) # our data should be efficient embedding
-    model.add(tf.keras.layers.Activation("sigmoid", name = "activation1"))
-    model.add(tf.keras.layers.Dense(4, name="dense2"))
-    model.add(tf.keras.layers.Activation("sigmoid", name = "activation2"))
-    model.add(tf.keras.layers.Dense(1, name="dense3"))
-    model.add(tf.keras.layers.Activation("sigmoid", name = "activation3"))
+    model.add(tf.keras.layers.Dense(320, input_shape=(7,7,1280))) # our data should be efficient embedding
+    model.add(tf.keras.layers.Activation('sigmoid'))
+    #model.add(tf.keras.layers.LeakyReLU(alpha=0.1))
+    model.add(tf.keras.layers.Dense(80))
+    model.add(tf.keras.layers.Activation('sigmoid'))
+    #model.add(tf.keras.layers.LeakyReLU(alpha=0.1))
+    model.add(tf.keras.layers.Dense(20))
+    model.add(tf.keras.layers.Activation('sigmoid'))
+    #model.add(tf.keras.layers.LeakyReLU(alpha=0.1))
+    model.add(tf.keras.layers.Dense(5))
+    model.add(tf.keras.layers.Activation('sigmoid'))
+   # model.add(tf.keras.layers.LeakyReLU(alpha=0.1))
+    model.add(tf.keras.layers.Dense(1))
+    model.add(tf.keras.layers.Activation('sigmoid'))
     model.add(tf.keras.layers.GlobalMaxPool2D(name="pool")) # pick the location with most propability for watermark
     model.summary(print_fn=lambda x: logging.info(x))
 
-    model.compile(loss=tf.losses.BinaryCrossentropy(), optimizer=tf.optimizers.Adam(learning_rate = 0.001))
+    batch_size = 32
+    dataset_size = 81280 # not known apriori, so update it on changing training data size
+    lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(0.001, decay_steps=5*dataset_size/batch_size, decay_rate=0.95, staircase=True)
+    model.compile(loss=tf.losses.BinaryCrossentropy(), optimizer=tf.optimizers.Adam(learning_rate = lr_schedule))
 
     stop = StopIfFileExists('stop.txt')
-    history = model.fit(dataset.batch(32), epochs=200, verbose=2, callbacks=[stop])
+    history = model.fit(dataset.batch(batch_size), epochs=200, verbose=2, callbacks=[stop])
     return model, history.history["loss"]
